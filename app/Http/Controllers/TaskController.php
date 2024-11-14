@@ -7,6 +7,7 @@ use App\Models\Proyek;
 use App\Models\Task;
 use App\Services\ProyekService;
 use App\Services\TaskService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -17,19 +18,28 @@ class TaskController extends Controller
      */
     public function index()
     {
-        $data_task = TaskService::dataAll();
-        $data_proyek = ProyekService::dataAll();
+        $data_task = TaskService::dataAll()->get();
 
-        return view('task', [
+        $notifications = $this->checkNotifications($data_task);
+
+        return view('task.index', [
             'data_task' => $data_task,
-            'data_proyek' => $data_proyek,
+            'notifications' => $notifications,
         ]);
     }
-
 
     /**
      * Show the form for creating a new resource.
      */
+    public function create()
+    {
+        $data_proyek = ProyekService::dataAll();
+
+        return view('task.create', [
+            'data_proyek' => $data_proyek,
+        ]);
+    }
+
 
     /**
      * Store a newly created resource in storage.
@@ -38,7 +48,6 @@ class TaskController extends Controller
     {
         $payload = [
             'task_name' => $request->input('task_name'),
-            'task_description' => $request->input('task_description'),
             'status' => $request->input('status'),
             'proyek' => $request->input('proyek'),
             'priority' => $request->input('priority'),
@@ -49,22 +58,21 @@ class TaskController extends Controller
 
         $validate = Validator::make($payload, [
             'task_name'     => 'required|string',
-            'task_description' => 'required',
             'status' => 'required',
-            'proyek' => 'required',
+            'proyek' => 'required|exists:proyeks,proyek_id',  // memastikan proyek valid dari database
             'priority' => 'required',
-            'due_date' => 'required',
-            'end_time' => 'required',
+            'due_date' => 'nullable|date_format:Y-m-d',
+            'end_time' => 'nullable|date_format:H:i',
             'proses' => 'required|integer|min:0|max:100',
         ], [
             'required' => ':attribute harus diisi',
+            'date_format' => ':attribute harus berformat :format',
             'string' => ':attribute harus berupa string',
             'integer' => ':attribute harus berupa angka',
             'min' => ':attribute minimal :min',
             'max' => ':attribute maksimal :max',
         ], [
             'task_name' => 'Nama Task',
-            'task_description' => 'Deskripsi Task',
             'status' => 'Status Task',
             'proyek' => 'Proyek Task',
             'priority' => 'Prioritas Task',
@@ -94,6 +102,8 @@ class TaskController extends Controller
     public function show(string $id)
     {
         $data = TaskService::getById($id);
+        $data_proyek = ProyekService::dataAll();
+
         if (!$data['status']) {
             $errorCode = $data['message'] == 'Not Found' ? 404 : 400;
             return response()->json([
@@ -101,7 +111,17 @@ class TaskController extends Controller
                 'message' => $data['message'],
             ], $errorCode);
         }
+
+        // Ambil ID proyek yang terkait dengan task
+        $selectedProyeks = $data['data']->proyek->pluck('proyek_id')->toArray();
+
+        return view('task.show', [
+            'data' => $data['data'],
+            'data_proyek' => $data_proyek,
+            'selectedProyeks' => $selectedProyeks,
+        ]);
     }
+
 
 
 
@@ -120,7 +140,6 @@ class TaskController extends Controller
     {
         $payload = [
             'task_name' => $request->input('task_name'),
-            'task_description' => $request->input('task_description'),
             'status' => $request->input('status'),
             'proyek' => $request->input('proyek'),
             'priority' => $request->input('priority'),
@@ -130,21 +149,21 @@ class TaskController extends Controller
 
         $validate = Validator::make($payload, [
             'task_name' => 'required|string',
-            'task_description' => 'required',
             'status' => 'required',
-            'proyek' => 'required',
+            'proyek' => 'required|exists:proyeks,proyek_id',  // memastikan proyek valid dari database
             'priority' => 'required',
-            'proses' => 'required',
-            'due_date' => 'required|integer|min:0|max:100',
+            'proses' => 'required|integer|min:0|max:100',
+            'due_date' => 'required|date_format:Y-m-d',
+            'end_time' => 'nullable|date_format:H:i',
         ], [
             'required' => ':attribute harus diisi',
             'string' => ':attribute harus berupa string',
+            'date_format' => ':attribute harus berformat :format',
             'integer' => ':attribute harus berupa angka',
             'min' => ':attribute minimal :min',
             'max' => ':attribute maksimal :max',
         ], [
             'task_name' => 'Nama Task',
-            'task_description' => 'Deskripsi Task',
             'status' => 'Status Task',
             'proyek' => 'Proyek Task',
             'priority' => 'Prioritas Task',
@@ -179,6 +198,4 @@ class TaskController extends Controller
             ], 'delete data unsuccessful', $errorCode);
         }
     }
-
-
 }

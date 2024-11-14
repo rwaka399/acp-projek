@@ -23,6 +23,7 @@ use Illuminate\Support\Facades\Route;
 //     return view('welcome');
 // });
 
+
 // Auth
 Route::get('/loginpage', [AuthController::class, 'loginPage'])->name('loginpage');
 Route::post('/login', [AuthController::class, 'login'])->name('login');
@@ -38,6 +39,7 @@ Route::middleware('auth.custom')->group(function () {
         Route::get('/all', [TaskController::class, 'index'])->name('task.all');
         Route::get('/create', [TaskController::class, 'create'])->name('task.create');
         Route::post('/store', [TaskController::class, 'store'])->name('task.store');
+        Route::get('/show/{id}', [TaskController::class, 'show'])->name('task.show');
         Route::put('/update/{id}', [TaskController::class, 'update'])->name('task.update');
         Route::delete('/delete/{id}', [TaskController::class, 'destroy'])->name('task.delete');
     });
@@ -45,12 +47,14 @@ Route::middleware('auth.custom')->group(function () {
     Route::prefix('manajer')->group(function () {
 
         Route::prefix('proyek')->group(function () {
+
             Route::get('/all', [ProyekController::class, 'index'])->name('proyek.all');
             Route::get('/create', [ProyekController::class, 'create'])->name('proyek.create');
             Route::post('/store', [ProyekController::class, 'store'])->name('proyek.store');
             Route::get('/show/{id}', [ProyekController::class, 'show'])->name('proyek.show');
             Route::put('/update/{id}', [ProyekController::class, 'update'])->name('proyek.update');
             Route::delete('/delete/{id}', [ProyekController::class, 'destroy'])->name('proyek.delete');
+
         });
     });
 

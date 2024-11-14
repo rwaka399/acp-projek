@@ -1,6 +1,6 @@
 @extends('layout')
 
-@section('title', 'Edit Role')
+@section('title', 'Create Role')
 
 @section('content')
     <div class="container-xxl flex-grow-1 container-p-y">

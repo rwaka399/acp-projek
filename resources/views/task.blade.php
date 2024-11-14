@@ -20,13 +20,22 @@
 @section('title', 'Proyek List')
 
 @section('content')
+    @if (!empty($notifications))
+        <div class="alert alert-warning">
+            <ul>
+                @foreach ($notifications as $notification)
+                    <li>{{ $notification }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     <div class="container-xxl flex-grow-1 container-p-y">
         <div class="row">
             <div class="col-l   g-12 mb-4 order-0">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <h5>List Task</h5>
-
                     </div>
                     <div class="d-flex align-items-end">
                         <div class="me-2">
@@ -137,8 +146,8 @@
                                                 </div>
                                                 <div class="mb-3">
                                                     <label for="end_time" class="form-label">End Time</label>
-                                                    <input type="time" class="form-control" id="end_time" 
-                                                    name="end_time" required>
+                                                    <input type="time" class="form-control" id="end_time"
+                                                        name="end_time" required>
                                                 </div>
                                                 <div class="mb-3">
                                                     <label for="status" class="form-label">Status</label>

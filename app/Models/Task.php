@@ -17,7 +17,6 @@ class Task extends Model
 
     protected $fillable = [
         'task_name',
-        'task_description',
         'status',
         'priority',
         'proses',
@@ -34,6 +33,11 @@ class Task extends Model
     public function taskProyek(): HasMany 
     {
         return $this->hasMany(TaskProyek::class, 'task_id', 'task_id');
+    }
+    
+    public function proyek()
+    {
+        return $this->belongsToMany(Proyek::class, 'task_proyeks', 'task_id', 'proyek_id');
     }
 
 

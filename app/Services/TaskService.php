@@ -13,7 +13,7 @@ class TaskService
 
     public static function dataAll()
     {
-        return Task::all();
+        return Task::query()->with('taskProyek.proyek');
     }
 
     public static function create($payload)
@@ -23,7 +23,6 @@ class TaskService
         try {
             $task = Task::create([
                 'task_name' => $payload['task_name'],
-                'task_description' => $payload['task_description'],
                 'status' => $payload['status'],
                 'priority' => $payload['priority'],
                 'proses' => $payload['proses'],
@@ -58,7 +57,7 @@ class TaskService
     public static function getById($id)
     {
         try {
-            $data = Task::find($id);
+            $data = Task::with('taskProyek.proyek')->where('task_id', $id);
             if (!$data) {
                 return [
                     'status' => false,
@@ -90,7 +89,6 @@ class TaskService
             } else {
                 $data->update([
                     'task_name' => $payload['task_name'],
-                    'task_description' => $payload['task_description'],
                     'due_date' => $payload['due_date'],
                     'status' => $payload['status'],
                     'presentase' => $payload['presentase'],
