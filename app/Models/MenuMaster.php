@@ -21,4 +21,9 @@ class MenuMaster extends Model
     {
         return $this->hasMany(RoleMenu::class, 'menu_master_id', 'menu_master_id');
     }
+
+    public function submenus()
+    {
+        return $this->hasMany(MenuMaster::class, 'menu_master_parent', 'menu_master_id');
+    }
 }

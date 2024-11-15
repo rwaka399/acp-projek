@@ -22,23 +22,27 @@ class Task extends Model
         'proses',
         'due_date',
         'end_time',
+        'created_by',
     ];
 
 
-    public function userTask(): HasMany 
+    public function userTask(): HasMany
     {
         return $this->hasMany(UserTask::class, 'task_id', 'task_id');
     }
 
-    public function taskProyek(): HasMany 
+    public function taskProyek(): HasMany
     {
         return $this->hasMany(TaskProyek::class, 'task_id', 'task_id');
     }
-    
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
     public function proyek()
     {
         return $this->belongsToMany(Proyek::class, 'task_proyeks', 'task_id', 'proyek_id');
     }
-
-
 }

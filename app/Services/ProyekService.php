@@ -13,10 +13,35 @@ class ProyekService
         return Proyek::all();
     }
 
+
+
     public static function getById($id)
     {
         try {
             $data = Proyek::find($id);
+            if (!$data) {
+                return [
+                    'status' => false,
+                    'data' => "Not Found"
+                ];
+            }
+            return [
+                'status' => true,
+                'data' => $data
+            ];
+        } catch (\Throwable $th) {
+            return [
+                'status' => false,
+                'errors' => $th->getMessage()
+            ];
+        }
+    }
+    public static function getByTaskId($id)
+    {
+        try {
+            $data = Proyek::join('task_proyeks', 'proyeks.proyek_id', '=', 'task_proyeks.proyek_id')
+                ->where('task_proyeks.task_id', $id)
+            ->first();
             if (!$data) {
                 return [
                     'status' => false,

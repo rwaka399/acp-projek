@@ -1,3 +1,18 @@
+{{-- <?php 
+
+Use App\Models\MenuMaster;
+use Illuminate\Support\Facades\Session;
+
+ $menus = MenuMaster::all();
+
+?> --}}
+
+
+
+
+
+
+
 <!DOCTYPE html>
 
 <!-- =========================================================
@@ -74,7 +89,7 @@
 
         <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
           <div class="app-brand demo">
-            {{-- <a href="index.html" class="app-brand-link">
+            <a href="index.html" class="app-brand-link">
               <span class="app-brand-logo demo">
                 <svg
                   width="25"
@@ -130,8 +145,8 @@
                   </g>
                 </svg>
               </span>
-              <span class="app-brand-text demo menu-text fw-bolder ms-2">Sneat</span>
-            </a> --}}
+              <span class="app-brand-text demo menu-text fw-bolder ms-2">Logoo</span>
+            </a>
 
             <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto d-block d-xl-none">
               <i class="bx bx-chevron-left bx-sm align-middle"></i>
@@ -140,7 +155,7 @@
 
           <div class="menu-inner-shadow"></div>
 
-          <ul class="menu-inner py-1">
+          {{-- <ul class="menu-inner py-1">
             <!-- Dashboard -->
             <li class="menu-item active">
               <a href="{{ route('dashboard') }}" class="menu-link">
@@ -150,12 +165,12 @@
             </li>
 
             <!-- Layouts -->
-            <li class="menu-item">
-              <a href="javascript:void(0);" class="menu-link menu-toggle">
-                <i class="menu-icon tf-icons bx bx-layout"></i>
-                <div>Master</div>
-              </a>
-
+            
+              <li class="menu-item">
+                <a href="javascript:void(0);" class="menu-link menu-toggle">
+                  <i class="menu-icon tf-icons bx bx-layout"></i>
+                  <div>Master</div>
+                </a>
               <ul class="menu-sub">
                 <li class="menu-item">
                   <a href="{{ route('users.all') }}" class="menu-link">
@@ -190,17 +205,48 @@
                 </a>
               </li>
               <li class="menu-item">
-                <a href="" class="menu-link">
-                  <i class='menu-icon tf-icons bx bx-envelope'></i>
-                  <div>Notification</div>
-                  <div>
-                    <span class="badge badge-center rounded-pill bg-danger" style="width: 18px; height: 18px;">4</span>
-                  </div>
+                <a href="{{ route('logout') }}" class="menu-link">
+                  <i class="menu-icon tf-icons bx bx-power-off"></i>
+                  <div>Logout</div>
                 </a>
               </li>
+              
             </li>
 
-          </ul>
+          </ul> --}}
+
+          <ul class="menu-inner py-1">
+            @foreach ($menus as $menu)
+                <!-- Cek apakah menu ini memiliki submenu -->
+                <li class="menu-item {{ request()->routeIs($menu->menu_master_link) ? 'active' : '' }}">
+                    @if ($menu->menu_master_link)
+                        <a href="{{ route($menu->menu_master_link) }}" class="menu-link">
+                            <i class="menu-icon tf-icons {{ $menu->menu_master_icon }}"></i>
+                            <div>{{ $menu->menu_master_name }}</div>
+                        </a>
+                    @else
+                        <a href="javascript:void(0);" class="menu-link menu-toggle">
+                            <i class="menu-icon tf-icons {{ $menu->menu_master_icon }}"></i>
+                            <div>{{ $menu->menu_master_name }}</div>
+                        </a>
+                        <!-- Menampilkan submenu -->
+                        <ul class="menu-sub">
+                            @foreach ($menu->submenus as $submenu)
+                                <li class="menu-item">
+                                    <a href="{{ route($submenu->menu_master_link) }}" class="menu-link">
+                                        <div>{{ $submenu->menu_master_name }}</div>
+                                    </a>
+                                </li>
+                            @endforeach
+                        </ul>
+                    @endif
+                </li>
+            @endforeach
+        </ul>
+        
+        
+        
+
         </aside>
         <!-- / Menu -->
 

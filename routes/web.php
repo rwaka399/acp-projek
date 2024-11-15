@@ -36,7 +36,7 @@ Route::middleware('auth.custom')->group(function () {
 
 
     Route::prefix('task')->group(function () {
-        Route::get('/all', [TaskController::class, 'index'])->name('task.all');
+        Route::get('/all', [TaskController::class, 'indexTask'])->name('indexTask');
         Route::get('/create', [TaskController::class, 'create'])->name('task.create');
         Route::post('/store', [TaskController::class, 'store'])->name('task.store');
         Route::get('/show/{id}', [TaskController::class, 'show'])->name('task.show');
@@ -48,7 +48,7 @@ Route::middleware('auth.custom')->group(function () {
 
         Route::prefix('proyek')->group(function () {
 
-            Route::get('/all', [ProyekController::class, 'index'])->name('proyek.all');
+            Route::get('/all', [ProyekController::class, 'indexProyek'])->name('indexProyek');
             Route::get('/create', [ProyekController::class, 'create'])->name('proyek.create');
             Route::post('/store', [ProyekController::class, 'store'])->name('proyek.store');
             Route::get('/show/{id}', [ProyekController::class, 'show'])->name('proyek.show');
@@ -63,7 +63,7 @@ Route::middleware('auth.custom')->group(function () {
     Route::prefix('master')->group(function () {
 
         Route::prefix('roles')->group(function () {
-            Route::get('/all', [RoleController::class, 'index'])->name('roles.all');
+            Route::get('/all', [RoleController::class, 'indexRole'])->name('indexRole');
             Route::get('/create', [RoleController::class, 'create'])->name('roles.create');
             Route::post('/store', [RoleController::class, 'store'])->name('roles.store');
             Route::get('/show/{id}', [RoleController::class, 'show'])->name('roles.show');
@@ -72,7 +72,7 @@ Route::middleware('auth.custom')->group(function () {
         });
 
         Route::prefix('users')->group(function () {
-            Route::get('/all', [UserController::class, 'list'])->name('users.all');
+            Route::get('/all', [UserController::class, 'listUser'])->name('listUser');
             Route::get('/create', [UserController::class, 'create'])->name('users.create');
             Route::post('/store', [UserController::class, 'store'])->name('users.store');
             Route::get('/show/{id}', [UserController::class, 'show'])->name('users.show');

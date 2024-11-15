@@ -127,7 +127,14 @@ class AuthService
     public static function logout()
     {
         
-        auth()->logout(true);
+        try {
+            auth()->logout(true);
+            return response()->json(['message' => 'Successfully logged out']);
+        } catch (\Tymon\JWTAuth\Exceptions\TokenInvalidException $e) {
+            return response()->json(['error' => 'Token is invalid'], 401);
+        } catch (\Tymon\JWTAuth\Exceptions\JWTException $e) {
+            return response()->json(['error' => 'Token could not be parsed'], 400);
+        }
     }
 
     /**

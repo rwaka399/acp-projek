@@ -3,12 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\ResponseFormatter;
+use App\Models\MenuMaster;
 use App\Models\Proyek;
 use App\Models\Task;
 use App\Services\ProyekService;
 use App\Services\TaskService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Validator;
 
 class TaskController extends Controller
@@ -16,15 +18,33 @@ class TaskController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function indexTask()
     {
-        $data_task = TaskService::dataAll()->get();
+        $user = Session::get('user');
+        $roleId = $user->userRole->first()->role_id;
 
-        $notifications = $this->checkNotifications($data_task);
+        // Ambil menu utama berdasarkan role_id
+        $menus = MenuMaster::where('menu_master_parent', 0)
+            ->whereHas('roleMenu', function ($query) use ($roleId) {
+                $query->where('role_menus.role_id', $roleId); 
+            })
+            ->with(['submenus' => function ($query) use ($roleId) {
+                $query->whereHas('roleMenu', function ($permissionQuery) use ($roleId) {
+                    $permissionQuery->where('role_menus.role_id', $roleId);
+                });
+            }])
+            ->get();
+
+
+            
+        // $notifications = $this->checkNotifications($data_task);
+
+        // $notifications = $this->checkNotifications($data_task);
 
         return view('task.index', [
-            'data_task' => $data_task,
-            'notifications' => $notifications,
+            // 'data_task' => $data_task,
+            'menus' => $menus,
+            // 'notifications' => $notifications,
         ]);
     }
 
@@ -33,10 +53,27 @@ class TaskController extends Controller
      */
     public function create()
     {
+
         $data_proyek = ProyekService::dataAll();
+
+        $user = Session::get('user');
+        $roleId = $user->userRole->first()->role_id;
+
+        // Ambil menu utama berdasarkan role_id
+        $menus = MenuMaster::where('menu_master_parent', 0) // Menu utama (parent)
+            ->whereHas('roleMenu', function ($query) use ($roleId) {
+                $query->where('role_menus.role_id', $roleId); // Menyaring menu berdasarkan role_id
+            })
+            ->with(['submenus' => function ($query) use ($roleId) {
+                $query->whereHas('roleMenu', function ($permissionQuery) use ($roleId) {
+                    $permissionQuery->where('role_menus.role_id', $roleId); // Menyaring submenu berdasarkan role_id
+                });
+            }])
+            ->get();
 
         return view('task.create', [
             'data_proyek' => $data_proyek,
+            'menus' => $menus,
         ]);
     }
 
@@ -81,6 +118,8 @@ class TaskController extends Controller
             'end_time' => 'Waktu Selesai Task',
         ]);
 
+        
+
         if ($validate->fails()) {
             return response()->json([
                 'status' => false,
@@ -89,11 +128,12 @@ class TaskController extends Controller
         }
 
         $data = TaskService::create($payload);
+
         if (!$data['status']) {
             return ResponseFormatter::error($data['errors'], 'create data unsuccessful');
         }
 
-        return redirect()->route('task.all');
+        return redirect()->route('indexTask');
     }
 
     /**
@@ -101,8 +141,27 @@ class TaskController extends Controller
      */
     public function show(string $id)
     {
+        $user = Session::get('user');
+        $roleId = $user->userRole->first()->role_id;
+
+        // Ambil menu utama berdasarkan role_id
+        $menus = MenuMaster::where('menu_master_parent', 0) // Menu utama (parent)
+            ->whereHas('roleMenu', function ($query) use ($roleId) {
+                $query->where('role_menus.role_id', $roleId); // Menyaring menu berdasarkan role_id
+            })
+            ->with(['submenus' => function ($query) use ($roleId) {
+                $query->whereHas('roleMenu', function ($permissionQuery) use ($roleId) {
+                    $permissionQuery->where('role_menus.role_id', $roleId); // Menyaring submenu berdasarkan role_id
+                });
+            }])
+            ->get();
+
+
         $data = TaskService::getById($id);
+        $data_proyek_selected = ProyekService::getByTaskId($id);
         $data_proyek = ProyekService::dataAll();
+
+        // dd($data_proyek_selected['data']);
 
         if (!$data['status']) {
             $errorCode = $data['message'] == 'Not Found' ? 404 : 400;
@@ -112,13 +171,17 @@ class TaskController extends Controller
             ], $errorCode);
         }
 
-        // Ambil ID proyek yang terkait dengan task
-        $selectedProyeks = $data['data']->proyek->pluck('proyek_id')->toArray();
+
+
+        
 
         return view('task.show', [
-            'data' => $data['data'],
+            'data' => $data[
+                'data'
+            ],
             'data_proyek' => $data_proyek,
-            'selectedProyeks' => $selectedProyeks,
+            'menus' => $menus,
+            'data_proyek_selected' => $data_proyek_selected['data'],
         ]);
     }
 
@@ -188,14 +251,16 @@ class TaskController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Task $task)
+    public function destroy(string $id)
     {
-        $data = TaskService::delete($task);
+        $data = TaskService::delete($id);
         if (!$data['status']) {
             $errorCode = $data['errors'] == 'Not Found' ? 404 : 400;
             return ResponseFormatter::error([
                 'errors' => $data['errors'],
             ], 'delete data unsuccessful', $errorCode);
         }
+
+        return redirect()->route('indexTask');   
     }
 }

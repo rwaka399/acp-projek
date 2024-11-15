@@ -7,6 +7,7 @@ use App\Models\TaskProyek;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Session;
 
 class TaskService
 {
@@ -16,11 +17,16 @@ class TaskService
         return Task::query()->with('taskProyek.proyek');
     }
 
+
+
     public static function create($payload)
     {
 
         DB::beginTransaction();
         try {
+
+            $user = Session::get('user');
+
             $task = Task::create([
                 'task_name' => $payload['task_name'],
                 'status' => $payload['status'],
@@ -29,15 +35,14 @@ class TaskService
                 'due_date' => $payload['due_date'],
                 'end_time' => $payload['end_time'],
                 'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
-                // 'created_by' => Auth::user()->user_id,
+                'created_by' => $user->user_id,
             ]);
 
-            if($payload['proyek']){
+            if ($payload['proyek']) {
                 TaskProyek::create([
                     'task_id' => $task->task_id,
                     'proyek_id' => $payload['proyek']
                 ]);
-                
             }
 
             DB::commit();
@@ -57,7 +62,7 @@ class TaskService
     public static function getById($id)
     {
         try {
-            $data = Task::with('taskProyek.proyek')->where('task_id', $id);
+            $data = Task::with('taskProyek.proyek')->where('task_id', $id)->first();
             if (!$data) {
                 return [
                     'status' => false,
@@ -80,6 +85,9 @@ class TaskService
     {
         DB::beginTransaction();
         try {
+
+            $user = Session::get('user');
+
             $data = Task::where('task_id', $id)->first();
             if (empty($data)) {
                 return [
@@ -94,9 +102,11 @@ class TaskService
                     'presentase' => $payload['presentase'],
                     'end_time' => $payload['end_time'],
                     'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
-                    // 'update' => Auth::user()->user_id,
+                    'update_by' => $user->user_id,
                 ]);
-                if($payload['proyek']){
+
+
+                if ($payload['proyek']) {
                     TaskProyek::where('task_id', $id)->update([
                         'proyek_id' => $payload['proyek']
                     ]);

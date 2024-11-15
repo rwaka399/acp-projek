@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\ResponseFormatter;
+use App\Models\MenuMaster;
 use App\Models\Proyek;
 use App\Services\ProyekService;
 use GuzzleHttp\Psr7\Response;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Validator;
 
 class ProyekController extends Controller
@@ -14,11 +16,27 @@ class ProyekController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function indexProyek()
     {
+        $user = Session::get('user');
+        $roleId = $user->userRole->first()->role_id; // Ambil role_id dari user
+
+        // Ambil menu utama berdasarkan role_id
+        $menus = MenuMaster::where('menu_master_parent', 0) // Menu utama (parent)
+            ->whereHas('roleMenu', function ($query) use ($roleId) {
+                $query->where('role_menus.role_id', $roleId); // Menyaring menu berdasarkan role_id
+            })
+            ->with(['submenus' => function ($query) use ($roleId) {
+                $query->whereHas('roleMenu', function ($permissionQuery) use ($roleId) {
+                    $permissionQuery->where('role_menus.role_id', $roleId); // Menyaring submenu berdasarkan role_id
+                });
+            }])
+            ->get();
+
+
         $data = ProyekService::dataAll();
 
-        return view('proyek.index', ['data' => $data]);
+        return view('proyek.index', ['data' => $data, 'menus' => $menus]);
     }
 
     /**
@@ -26,7 +44,22 @@ class ProyekController extends Controller
      */
     public function create()
     {
-        return view('proyek.create');
+        $user = Session::get('user');
+        $roleId = $user->userRole->first()->role_id; // Ambil role_id dari user
+
+        // Ambil menu utama berdasarkan role_id
+        $menus = MenuMaster::where('menu_master_parent', 0) // Menu utama (parent)
+            ->whereHas('roleMenu', function ($query) use ($roleId) {
+                $query->where('role_menus.role_id', $roleId); // Menyaring menu berdasarkan role_id
+            })
+            ->with(['submenus' => function ($query) use ($roleId) {
+                $query->whereHas('roleMenu', function ($permissionQuery) use ($roleId) {
+                    $permissionQuery->where('role_menus.role_id', $roleId); // Menyaring submenu berdasarkan role_id
+                });
+            }])
+            ->get();
+
+        return view('proyek.create' , ['menus' => $menus]);
     }
 
     /**
@@ -62,7 +95,7 @@ class ProyekController extends Controller
         }
 
 
-        return redirect()->route('proyek.all');
+        return redirect()->route('indexProyek');
     }
 
     /**
@@ -70,6 +103,22 @@ class ProyekController extends Controller
      */
     public function show(string $id)
     {
+        $user = Session::get('user');
+        $roleId = $user->userRole->first()->role_id; // Ambil role_id dari user
+
+        // Ambil menu utama berdasarkan role_id
+        $menus = MenuMaster::where('menu_master_parent', 0) // Menu utama (parent)
+            ->whereHas('roleMenu', function ($query) use ($roleId) {
+                $query->where('role_menus.role_id', $roleId); // Menyaring menu berdasarkan role_id
+            })
+            ->with(['submenus' => function ($query) use ($roleId) {
+                $query->whereHas('roleMenu', function ($permissionQuery) use ($roleId) {
+                    $permissionQuery->where('role_menus.role_id', $roleId); // Menyaring submenu berdasarkan role_id
+                });
+            }])
+            ->get();
+
+
         $data = ProyekService::getById($id);
         if(!$data['status']) {
             $errorCode = $data['errors'] == 'Not Found' ? 404 : 400;
@@ -78,7 +127,7 @@ class ProyekController extends Controller
             ], 'get data unsuccessful', $errorCode);
         }
 
-        return view('proyek.show', ['data' => $data['data']]);
+        return view('proyek.show', ['data' => $data['data'], 'menus' => $menus]);
     }
 
     /**
@@ -117,7 +166,7 @@ class ProyekController extends Controller
             return ResponseFormatter::error($data['errors'], 'update data unsuccessful');
         }
 
-        return redirect()->route('proyek.all');
+        return redirect()->route('indexProyek');
 
     }
 
@@ -131,7 +180,7 @@ class ProyekController extends Controller
             return ResponseFormatter::error($data['errors'], 'delete data unsuccessful');
         }
 
-        return redirect()->route('proyek.all');
+        return redirect()->route('indexProyek');
     }
 
 }

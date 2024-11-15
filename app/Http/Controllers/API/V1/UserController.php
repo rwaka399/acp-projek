@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Services\Master\UserService;
 use App\Helpers\ResponseFormatter;
+use App\Models\MenuMaster;
 use App\Services\Master\RoleService;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
@@ -15,12 +17,28 @@ class UserController extends Controller
      * Display a listing of the resource.
      */
 
-    public function list()
+    public function listUser()
     {
+        $user = Session::get('user');
+        $roleId = $user->userRole->first()->role_id; // Ambil role_id dari user
+
+        // Ambil menu utama berdasarkan role_id
+        $menus = MenuMaster::where('menu_master_parent', 0) // Menu utama (parent)
+            ->whereHas('roleMenu', function ($query) use ($roleId) {
+                $query->where('role_menus.role_id', $roleId); // Menyaring menu berdasarkan role_id
+            })
+            ->with(['submenus' => function ($query) use ($roleId) {
+                $query->whereHas('roleMenu', function ($permissionQuery) use ($roleId) {
+                    $permissionQuery->where('role_menus.role_id', $roleId); // Menyaring submenu berdasarkan role_id
+                });
+            }])
+            ->get();
+
 
         $data = UserService::dataAll()->get();
 
-        return view('master.users.index', ['data' => $data]);
+        return view('master.users.index', ['data' => $data,
+            'menus' => $menus]);
     }
 
 
@@ -46,10 +64,26 @@ class UserController extends Controller
     public function create()
     {
 
+        $user = Session::get('user');
+        $roleId = $user->userRole->first()->role_id; // Ambil role_id dari user
+
+        // Ambil menu utama berdasarkan role_id
+        $menus = MenuMaster::where('menu_master_parent', 0) // Menu utama (parent)
+            ->whereHas('roleMenu', function ($query) use ($roleId) {
+                $query->where('role_menus.role_id', $roleId); // Menyaring menu berdasarkan role_id
+            })
+            ->with(['submenus' => function ($query) use ($roleId) {
+                $query->whereHas('roleMenu', function ($permissionQuery) use ($roleId) {
+                    $permissionQuery->where('role_menus.role_id', $roleId); // Menyaring submenu berdasarkan role_id
+                });
+            }])
+            ->get();
+
 
         $data = RoleService::dataAll()->get();
 
-        return view('master.users.create', ['data' => $data]);
+        return view('master.users.create', ['data' => $data,
+            'menus' => $menus]);
     }
 
 
@@ -104,12 +138,27 @@ class UserController extends Controller
             return ResponseFormatter::error($data['errors'], 'create data unsuccessful');
         }
 
-        return redirect()->route('users.all')->with('success', 'Data berhasil ditambahkan');
+        return redirect()->route('listUser')->with('success', 'Data berhasil ditambahkan');
     }
 
     public function show(string $id)
 
     {
+        $user = Session::get('user');
+        $roleId = $user->userRole->first()->role_id; // Ambil role_id dari user
+
+        // Ambil menu utama berdasarkan role_id
+        $menus = MenuMaster::where('menu_master_parent', 0) // Menu utama (parent)
+            ->whereHas('roleMenu', function ($query) use ($roleId) {
+                $query->where('role_menus.role_id', $roleId); // Menyaring menu berdasarkan role_id
+            })
+            ->with(['submenus' => function ($query) use ($roleId) {
+                $query->whereHas('roleMenu', function ($permissionQuery) use ($roleId) {
+                    $permissionQuery->where('role_menus.role_id', $roleId); // Menyaring submenu berdasarkan role_id
+                });
+            }])
+            ->get();
+
         $data = UserService::getById($id);
 
         $roles = RoleService::dataAll()->get();
@@ -124,7 +173,8 @@ class UserController extends Controller
         return view('master.users.show', [
             'data' => $data['data'],
             'roles' => $roles,
-            'userRoles' => $userRoles
+            'userRoles' => $userRoles,
+            'menus' => $menus
         ]);
     }
 
@@ -141,7 +191,6 @@ class UserController extends Controller
             // 'path_photo' => $request->input('path_photo'),
             'role' => json_encode($request->input('role'))
         ];
-
 
         
         // Validation rules
@@ -185,11 +234,12 @@ class UserController extends Controller
         }
 
         $data = UserService::edit($payload, $id);
+
         if (!$data['status']) {
             return ResponseFormatter::error($data['errors'], 'update data unsuccessful');
         }
 
-        return redirect()->route('users.all')->with('success', 'Data berhasil diubah');
+        return redirect()->route('listUser')->with('success', 'Data berhasil diubah');
     }
 
     public function destroy(string $id)
@@ -200,6 +250,6 @@ class UserController extends Controller
             return ResponseFormatter::error($data['errors'], 'delete data unsuccessful');
         }
 
-        return redirect()->route('users.all')->with('success', 'Data berhasil dihapus');
+        return redirect()->route('listUser')->with('success', 'Data berhasil dihapus');
     }
 }

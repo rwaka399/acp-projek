@@ -47,7 +47,6 @@ class AuthController extends Controller
         }
 
         $data = AuthService::login($credentials);
-
         if (!$data['status']) {
             return ResponseFormatter::error([
                 'message' => "Unauthorized",
@@ -55,7 +54,11 @@ class AuthController extends Controller
             ], 'Authentication Failed');
         }
 
-        Session::put('token', $data['data']['token']);
+
+        foreach ($data['data'] as $key => $value) {
+            Session::put($key, $value);
+        }
+
 
         return redirect()->route('dashboard');
     }
@@ -65,7 +68,7 @@ class AuthController extends Controller
 
         Session::flush('token');
         AuthService::logout();
-       
+    
         return redirect()->route('loginpage');
     }
 }

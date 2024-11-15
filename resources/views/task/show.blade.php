@@ -20,23 +20,23 @@
                         <div class="mb-3">
                             <label for="status" class="form-label">Status</label>
                             <select class="form-select" id="status" name="status">
-                                <option value="Hold" {{ old('status', $task->status) == 'Hold' ? 'selected' : '' }}>Hold
+                                <option value="Hold" {{ old('status', $data->status) == 'Hold' ? 'selected' : '' }}>Hold
                                 </option>
                                 <option value="In Progress"
-                                    {{ old('status', $task->status) == 'In Progress' ? 'selected' : '' }}>In Progress
+                                    {{ old('status', $data->status) == 'In Progress' ? 'selected' : '' }}>In Progress
                                 </option>
                                 <option value="Completed"
-                                    {{ old('status', $task->status) == 'Completed' ? 'selected' : '' }}>Completed</option>
+                                    {{ old('status', $data->status) == 'Completed' ? 'selected' : '' }}>Completed</option>
                             </select>
                         </div>
                         <div class="mb-3">
                             <label for="priority" class="form-label">Prioritas</label>
                             <select class="form-select" id="priority" name="priority">
-                                <option value="Low" {{ old('priority', $task->priority) == 'Low' ? 'selected' : '' }}>Low
+                                <option value="Low" {{ old('priority', $data->priority) == 'Low' ? 'selected' : '' }}>Low
                                 </option>
-                                <option value="Medium" {{ old('priority', $task->priority) == 'Medium' ? 'selected' : '' }}>
+                                <option value="Medium" {{ old('priority', $data->priority) == 'Medium' ? 'selected' : '' }}>
                                     Medium</option>
-                                <option value="High" {{ old('priority', $task->priority) == 'High' ? 'selected' : '' }}>
+                                <option value="High" {{ old('priority', $data->priority) == 'High' ? 'selected' : '' }}>
                                     High</option>
                             </select>
                         </div>
@@ -55,8 +55,8 @@
                             <select class="form-select" id="proyek" name="proyek[]">
                                 <option value="" selected disabled>Pilih Proyek</option>
                                 @foreach ($data_proyek as $proyek)
-                                    <option value="{{ $proyek->proyek_id }}"
-                                        {{ in_array($proyek->proyek_id, $selectedProyeks) ? 'selected' : '' }}>
+                                
+                                    <option value="{{ $proyek->proyek_id }}" <?=($data_proyek_selected->proyek_id == $proyek->proyek_id) ? 'selected':''?>>
                                         {{ $proyek->proyek_name }}  
                                     </option>
                                 @endforeach
