@@ -20,17 +20,26 @@ class RoleMenuSeeder extends Seeder
 
         foreach ($roles as $role) {
             foreach ($menus as $menu) {
-                if ($role->role_name == 'Administrator') {
+                // Always add 'Logout' menu to all roles
+                if ($menu->menu_master_name == 'Log Out') {
                     \App\Models\RoleMenu::create([
                         'role_id' => $role->role_id,
                         'menu_master_id' => $menu->menu_master_id,
                         'created_by' => $admin->user_id,
                     ]);
                 }
-
+                // Administrator role - all menus are accessible
+                elseif ($role->role_name == 'Administrator') {
+                    \App\Models\RoleMenu::create([
+                        'role_id' => $role->role_id,
+                        'menu_master_id' => $menu->menu_master_id,
+                        'created_by' => $admin->user_id,
+                    ]);
+                }
+                // Manajer role - specific menu access
                 elseif (
                     $role->role_name == 'Manajer' &&
-                    ($menu->menu_master_name == 'Dashboards' || $menu->menu_master_name == 'Task' || $menu->menu_master_name == 'Master' ||($menu->menu_master_name == 'Proyek' && $menu->menu_master_parent == 2) || $menu->menu_master_name == 'Logout')
+                    ($menu->menu_master_name == 'Dashboards' || $menu->menu_master_name == 'Task' || $menu->menu_master_name == 'Master' || ($menu->menu_master_name == 'Proyek' && $menu->menu_master_parent == 2))
                 ) {
                     \App\Models\RoleMenu::create([
                         'role_id' => $role->role_id,
@@ -38,18 +47,17 @@ class RoleMenuSeeder extends Seeder
                         'created_by' => $admin->user_id,
                     ]);
                 }
-                
+                // User role - specific menu access
                 elseif (
                     $role->role_name == 'User' &&
-                    in_array($menu->menu_master_name, ['Dashboards', 'Task', 'Logout'])
+                    in_array($menu->menu_master_name, ['Dashboards', 'Task'])
                 ) {
                     \App\Models\RoleMenu::create([
                         'role_id' => $role->role_id,
                         'menu_master_id' => $menu->menu_master_id,
                         'created_by' => $admin->user_id,
                     ]);
-                } 
-                
+                }
             }
         }
     }

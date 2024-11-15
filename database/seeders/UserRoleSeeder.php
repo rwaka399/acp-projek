@@ -12,17 +12,24 @@ class UserRoleSeeder extends Seeder
      */
     public function run(): void
     {
-        $admin = \App\Models\User::first();
-        $users = \App\Models\User::all();
+        $admin = \App\Models\User::first(); // Assuming the first user is admin
+        $roleAdmin = \App\Models\Role::where('role_name', 'Administrator')->first();
+        $roleManager = \App\Models\Role::where('role_name', 'Manajer')->first();
         $roleUser = \App\Models\Role::where('role_name', 'User')->first();
-        $roleAdmin = \App\Models\Role::first();
 
-        foreach ($users as $key => $user) {
-            if ($user->username != 'user') {
-                $this->createData($user, $roleAdmin, $admin);
-            }
-            $this->createData($user, $roleUser, $admin);
-        }
+        // Assigning roles to specific users
+        $user1 = \App\Models\User::where('username', 'smartsoft')->first();  
+        $user2 = \App\Models\User::where('username', 'smartsoft2')->first(); 
+        $user3 = \App\Models\User::where('username', 'user')->first();
+
+        // Assign 'Administrator' role to user1
+        $this->createData($user1, $roleAdmin, $admin);
+
+        // Assign 'Manajer' role to user2
+        $this->createData($user2, $roleManager, $admin);
+
+        // Assign 'User' role to user3
+        $this->createData($user3, $roleUser, $admin);
     }
 
     public function createData($user, $role, $admin): void

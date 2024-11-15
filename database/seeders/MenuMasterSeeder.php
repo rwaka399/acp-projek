@@ -151,7 +151,7 @@ public function run(): void
     \App\Models\MenuMaster::create([
         'menu_master_name' => 'Task',
         'menu_master_type' => 'MENU',
-        'menu_master_icon' => null,
+        'menu_master_icon' => 'menu-icon tf-icons bx bx-edit',
         'menu_master_link' => 'indexTask',
         'menu_master_urutan' => 3,
         'menu_master_parent' => 0,
